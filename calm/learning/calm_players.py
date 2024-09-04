@@ -32,9 +32,38 @@ from isaacgym.torch_utils import *
 from rl_games.algos_torch import players
 
 from learning import amp_players
-
+import cv2
 import numpy as np
 
+class VideoRecorder:
+    def __init__(self, video_path='walk.mp4', frame_width=224, frame_height=224, fps=20, max_frames=200):
+        # Initialize video writer with specified path, resolution, and frame rate
+        self.video_writer = cv2.VideoWriter(
+            video_path,
+            cv2.VideoWriter_fourcc(*'mp4v'),  # codec for .mp4
+            fps,
+            (frame_width, frame_height)
+        )
+        self.frame_count = 0  # Initialize frame counter
+        self.max_frames = max_frames  # Set maximum frame limit
+
+    def add_frame(self, frame):
+        if self.frame_count >= self.max_frames:
+            print("Frame limit reached, stopping recording.")
+            self.release()
+            exit()
+
+        # Convert the frame from PyTorch tensor to a NumPy array and write to video
+        frame_np = frame.cpu().numpy().astype(np.uint8)
+        frame_np = cv2.cvtColor(frame_np, cv2.COLOR_RGB2BGR)  # Convert RGB to BGR
+        self.video_writer.write(frame_np)
+
+        # Increment the frame counter
+        self.frame_count += 1
+
+    def release(self):
+        # Release the video writer
+        self.video_writer.release()
 
 class CALMPlayer(amp_players.AMPPlayerContinuous):
     def __init__(self, config):
@@ -68,6 +97,7 @@ class CALMPlayer(amp_players.AMPPlayerContinuous):
 
             self._interpolation_steps = 100
             self.env.task.max_episode_length = 500
+        # self.video_recoder = VideoRecorder()
 
         return
 
@@ -178,6 +208,8 @@ class CALMPlayer(amp_players.AMPPlayerContinuous):
 
     def _update_latents(self):
         print("latent_step_count is ", self._latent_step_count)
+        # frame = self.env.task.render_img(sync_frame_time=True)[0].permute(1, 2, 0)
+        # self.video_recoder.add_frame(frame)
         if self._latent_step_count <= 0:
 
         # if we want the interpolation work
@@ -189,8 +221,8 @@ class CALMPlayer(amp_players.AMPPlayerContinuous):
                 # self._interpolation_alpha -= 0.3
                 clamped_alpha = torch.clamp_min(self._interpolation_alpha, min=0)
                 self._calm_latents = torch.nn.functional.normalize(self._latents0 * clamped_alpha + self._latents1 * (1 - clamped_alpha), dim=1)
-            else:
-                print(self._interpolation_alpha)
+            # else:
+            #     print(self._interpolation_alpha)
 
                 self._reset_latents()
             self._reset_latent_step_count()

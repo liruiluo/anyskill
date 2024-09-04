@@ -511,7 +511,35 @@ class Humanoid(BaseTask):
 
         super().render(sync_frame_time)
         return
+    def render_img(self, sync_frame_time=False):
+        self.gym.refresh_actor_root_state_tensor(self.sim)
+        char_root_pos = self._humanoid_root_states[:, 0:3] if self.RENDER else self._humanoid_root_states[:, 0:3].cpu().numpy()
+        self._cam_prev_char_pos[:] = char_root_pos
 
+        for env_id in range(self.num_envs):
+            cam_trans = self.gym.get_viewer_camera_transform(self.viewer, None)
+            cam_pos = torch.tensor([cam_trans.p.x, cam_trans.p.y, cam_trans.p.z], device=self.device)
+            cam_delta = cam_pos - self._cam_prev_char_pos[env_id]
+
+            target = gymapi.Vec3(char_root_pos[env_id, 0], char_root_pos[env_id, 1], 1.0)
+            pos = gymapi.Vec3(char_root_pos[env_id, 0] + cam_delta[0],
+                              char_root_pos[env_id, 1] + cam_delta[1],
+                              cam_pos[2])
+
+            self.gym.viewer_camera_look_at(self.viewer, None, pos, target)
+            pos_nearer = gymapi.Vec3(pos.x + 1.2, pos.y + 1.2, pos.z)
+            self.gym.set_camera_location(self.camera_handles[env_id], self.envs[env_id], pos_nearer, target)
+
+        self.gym.render_all_camera_sensors(self.sim)
+        self.gym.start_access_image_tensors(self.sim)
+
+        for env_id in range(self.num_envs):
+            camera_rgba_tensor = self.gym.get_camera_image_gpu_tensor(self.sim, self.envs[env_id], self.camera_handles[env_id],
+                                                                      gymapi.IMAGE_COLOR)
+            self.torch_rgba_tensor[env_id] = gymtorch.wrap_tensor(camera_rgba_tensor)[:, :, :3].float()  # [224,224,3] -> IM -> [env,224,224,3]
+        self.gym.end_access_image_tensors(self.sim)
+
+        return self.torch_rgba_tensor.permute(0, 3, 1, 2)
     def _build_key_body_ids_tensor(self, key_body_names):
         env_ptr = self.envs[0]
         actor_handle = self.humanoid_handles[0]
