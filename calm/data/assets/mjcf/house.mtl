@@ -1,0 +1,48 @@
+# 3DMap. Game location builder v.Pro (Free) v:version 7.608 for android#
+# MTL for OBJ filename=Copy_village_house_0409_0853_selected43ObjsInGroup.obj#
+# date=Fri Apr 09 08:53:29 GMT+01:00 2021#
+# Material Count: 4#
+
+newmtl Material_0
+Ns 323.999994
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /texture0.PNG
+
+newmtl Material_1
+Ns 323.999994
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /texture1.PNG
+
+newmtl Material_2
+Ns 323.999994
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /texture2.PNG
+
+newmtl Material_3
+Ns 323.999994
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /texture3.PNG
